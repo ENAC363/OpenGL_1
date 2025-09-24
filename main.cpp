@@ -59,7 +59,7 @@ void generateEllipsePoints(glm::vec2 vertices[], glm::vec3 colors[], int startVe
 		if (verticalScale == 1.0) {
 			colors[i] = glm::vec3(generateAngleColor(currentAngle), 0.0, 0.0);
 		} else {
-			colors[i] = RED;
+			colors[i] = GREEN;
 		}
 		currentAngle += angleIncrement;
 	}
@@ -112,7 +112,7 @@ void generateLinePoints(glm::vec2 vertices[], glm::vec3 colors[], int startVerte
 	colors[startVertexIndex + 1] = BLUE;
 }
 
-GLuint vao[3], program;
+GLuint vao[5], program;
 void init()
 {
 
@@ -125,14 +125,21 @@ void init()
 	// 定义线的点
 	glm::vec2 line_vertices[LINE_NUM_POINTS];
 	glm::vec3 line_colors[LINE_NUM_POINTS];
-
 	// @TODO: 生成圆形和椭圆上的点和颜色
+	// 定义椭圆的点
+	glm::vec2 ellipse_vertices[ELLIPSE_NUM_POINTS];
+	glm::vec3 ellipse_colors[ELLIPSE_NUM_POINTS];
+	// 定义圆上的点
+	glm::vec2 circle_vertices[CIRCLE_NUM_POINTS];
+	glm::vec3 circle_colors[CIRCLE_NUM_POINTS];
+
 
 	// 调用生成形状顶点位置的函数
 	generateTrianglePoints(triangle_vertices, triangle_colors, 0);
 	generateSquarePoints(square_vertices, square_colors, SQUARE_NUM, 0);
 	generateLinePoints(line_vertices, line_colors, 0);
-
+	generateEllipsePoints(circle_vertices, circle_colors, 0, CIRCLE_NUM_POINTS, glm::vec2(-0.5f, 0.7f), 0.2, 1);
+	generateEllipsePoints(ellipse_vertices, ellipse_colors, 0, ELLIPSE_NUM_POINTS, glm::vec2(0.4f, 0.7f), 0.2, 0.4);
 
 	// 读取着色器并使用
 	std::string vshader, fshader;
@@ -244,6 +251,71 @@ void init()
 		sizeof(glm::vec3),
 		BUFFER_OFFSET(0));
 
+	/*
+	* 初始化圆的数据
+	*/
+	glGenVertexArrays(1, &vao[3]);
+	glBindVertexArray(vao[3]);
+
+	glGenBuffers(1, &vbo[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(circle_vertices), circle_vertices, GL_STATIC_DRAW);
+	location = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(location);
+	glVertexAttribPointer(
+		location,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(glm::vec2),
+		BUFFER_OFFSET(0));
+
+	glGenBuffers(1, &vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(circle_colors), circle_colors, GL_STATIC_DRAW);
+	cLocation = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(cLocation);
+	glVertexAttribPointer(
+		cLocation,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(glm::vec3),
+		BUFFER_OFFSET(0));
+
+
+	/*
+	* 初始化椭圆的数据
+	*/
+
+	glGenVertexArrays(1, &vao[4]);
+	glBindVertexArray(vao[4]);
+
+	glGenBuffers(1, &vbo[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(ellipse_vertices), ellipse_vertices, GL_STATIC_DRAW);
+	location = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(location);
+	glVertexAttribPointer(
+		location,
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(glm::vec2),
+		BUFFER_OFFSET(0));
+
+	glGenBuffers(1, &vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(ellipse_colors), ellipse_colors, GL_STATIC_DRAW);
+	cLocation = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(cLocation);
+	glVertexAttribPointer(
+		cLocation,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(glm::vec3),
+		BUFFER_OFFSET(0));
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
@@ -266,8 +338,11 @@ void display(void)
 	glDrawArrays(GL_LINES, 0, LINE_NUM_POINTS);
 
 	// @TODO: 绘制圆
+	glBindVertexArray(vao[3]);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_NUM_POINTS);
 	// @TODO: 绘制椭圆
-
+	glBindVertexArray(vao[4]);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, ELLIPSE_NUM_POINTS);
 	glFlush();
 }
 
